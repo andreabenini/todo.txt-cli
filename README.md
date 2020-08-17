@@ -23,7 +23,10 @@ Download the latest stable [release][release] for use on your desktop or server.
 
 ```shell
 brew install todo-txt
+cp -n /usr/local/opt/todo-txt/todo.cfg ~/.todo.cfg
 ```
+
+**Note**: The `-n` flag for `cp` makes sure you do not overwrite an existing file.
 
 ### Linux
 
@@ -47,7 +50,7 @@ make install CONFIG_DIR=/etc INSTALL_DIR=/usr/bin BASH_COMPLETION=/usr/share/bas
 
 #### Arch Linux (AUR)
 
-https://aur.archlinux.org/packages/todotxt-git/
+https://aur.archlinux.org/packages/todotxt/
 
 
 ## Usage
