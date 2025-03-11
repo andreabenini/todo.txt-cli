@@ -24,11 +24,7 @@ Download the latest stable [release][release] for use on your desktop or server.
 ```shell
 brew install todo-txt
 
-# For macOS on x86 CPU 
-cp -n /usr/local/opt/todo-txt/todo.cfg ~/.todo.cfg
-
-# For macOS on arm CPU
-cp -n /opt/homebrew/opt/todo-txt/todo.cfg ~/.todo.cfg
+cp -n $(brew --prefix)/opt/todo-txt/todo.cfg ~/.todo.cfg
 ```
 
 **Note**: The `-n` flag for `cp` makes sure you do not overwrite an existing file.
@@ -45,12 +41,13 @@ make test
 
 *NOTE:* Makefile defaults to several default paths for installed files. Adjust to your system:
 
-- `INSTALL_DIR`: PATH for executables (default /usr/local/bin)
-- `CONFIG_DIR`: PATH for the todo.txt configuration template
-- `BASH_COMPLETION`: PATH for autocompletion scripts (default to /etc/bash_completion.d)
+- `INSTALL_DIR`: PATH for executables (default `/usr/local/bin`)
+- `CONFIG_DIR`: PATH for the `todo/config` configuration template (default `/usr/local/etc`)
+- `BASH_COMPLETION`: PATH for autocompletion scripts (default to `/usr/local/share/bash-completion/completions`)
 
 ```shell
-make install CONFIG_DIR=/etc INSTALL_DIR=/usr/bin BASH_COMPLETION=/usr/share/bash-completion/completions
+# Note: Showcasing config overrides for legacy locations; NOT recommended!
+make install CONFIG_DIR=/etc INSTALL_DIR=/usr/bin BASH_COMPLETION=/etc/bash_completion.d
 ```
 
 #### Arch Linux (AUR)
@@ -72,6 +69,18 @@ For example, to add a todo item, you can do:
 
 ```shell
 todo.sh add "THING I NEED TO DO +project @context"
+```
+### `replace`
+Replaces task on line NR with UPDATED TODO.
+
+```shell
+todo.sh replace NR "UPDATED TODO"
+```
+### `report`
+Adds the number of open tasks and done tasks to report.txt.
+
+```shell
+todo.sh report
 ```
 
 Read about all the possible commands in the [USAGE][USAGE] file.
