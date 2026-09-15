@@ -78,7 +78,7 @@ $(OUTPUT_FILES): $(DISTNAME)/%: %
 
 # generate todo.sh
 $(DISTNAME)/todo.sh: VERSION-FILE
-	sed -e 's/@DEV_VERSION@/'$(VERSION)'/' todo.sh > $(DISTNAME)/todo.sh
+	sed -e 's/.*@DEV_VERSION@.*/VERSION="'$(VERSION)'"/' todo.sh > $(DISTNAME)/todo.sh
 	chmod +x $(DISTNAME)/todo.sh
 
 .PHONY: build
@@ -100,8 +100,15 @@ clean: test-pre-clean VERSION-FILE   ## remove dist directory and all release fi
 install: build installdirs   ## local package install
 	$(INSTALL_PROGRAM) $(DISTNAME)/todo.sh $(DEST_COMMAND)
 	$(INSTALL_DATA) $(DISTNAME)/todo_completion $(DEST_COMPLETION)
-	[ -e $(DEST_CONFIG) ] || \
-	    sed "s/^\(export[ \t]*TODO_DIR=\).*/\1~\/.todo/" $(DISTNAME)/todo.cfg > $(DEST_CONFIG)
+	if [ ! -e $(DEST_CONFIG) ]; then \
+	    sed 's@^\(export TODO_DIR=\).*@\1~/.todo@' $(DISTNAME)/todo.cfg > $(DEST_CONFIG); \
+	    if sed -i.bak 's@^# \(export TODOTXT_SED_COMMAND=sed\)$$@\1@' $(DEST_CONFIG) 2>/dev/null; then \
+	        rm -f $(DEST_CONFIG).bak; \
+	        echo 'This sed supports in-place editing.'; \
+	    else \
+	        echo 'Need sed in-place emulation here.'; \
+	    fi; \
+	fi
 
 .PHONY: uninstall
 uninstall:   ## uninstall package
@@ -140,5 +147,8 @@ test: aggregate-results   ## run tests
 	tests/aggregate-results.sh tests/test-results/t*-*
 	rm -rf tests/test-results
 
+disttest: export SRC_DIRECTORY = $(CURDIR)/$(DISTNAME)
+disttest: build test
+
 # Force tests to get run every time
-.PHONY: test test-pre-clean aggregate-results $(TESTS)
+.PHONY: test disttest test-pre-clean aggregate-results $(TESTS)

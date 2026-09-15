@@ -6,7 +6,7 @@ shopt -s extglob extquote
 # NOTE: Todo.sh requires a configuration file to run.
 # Place it in one of the default locations or use the -d option for a custom location.
 
-[ -f VERSION-FILE ] && . VERSION-FILE || VERSION="@DEV_VERSION@"
+[ -f "$(dirname "$0")/VERSION-FILE" ] && . "$(dirname "$0")/VERSION-FILE" || VERSION="@DEV_VERSION@"
 version()
 {
     cat <<-EndVersion
@@ -27,9 +27,28 @@ export TODO_SH TODO_FULL_SH
 
 oneline_usage="$TODO_SH [-fhpantvV] [-d todo_config] action [task_number] [task_description]"
 
+# Assumption: The in-place argument is the first
+# Assumption: Only a single file is processed with sed
+sed() {
+    if [ -n "$TODOTXT_SED_COMMAND" ]; then
+        command "$TODOTXT_SED_COMMAND" "$@"
+    elif command -v gsed &>/dev/null; then
+        gsed "$@"
+    elif [ "$1" = '-i.bak' ]; then
+        shift
+        filepath=${!#}
+        filepath_temp=${TMPDIR-/tmp}/todo.sh-sed.$RANDOM.$$
+        command sed "$@" > "$filepath_temp" && mv "$filepath_temp" "$filepath"
+    else
+        command sed "$@"
+    fi
+}
+[ "$TODOTXT_SED_EXPORT_FOR_ADDONS" = 1 ] \
+    && export -f sed
+
 usage()
 {
-    cat <<-EndUsage
+    cat >&2 <<-EndUsage
 		Usage: $oneline_usage
 		Try '$TODO_SH -h' for more information.
 	EndUsage
@@ -269,10 +288,9 @@ actionsHelp()
 
 		    move NR DEST [SRC]
 		    mv NR DEST [SRC]
-		      Moves the line NR from source text file (SRC) to destination text file (DEST).
-		      Both source and destination file must be located in the directory defined
-		      in the configuration directory.  When SRC is not defined
-		      it's by default todo.txt.
+		      Moves the line NR from source file (SRC) to destination file (DEST).
+		      Both files must be located in the todo.txt directory. SRC defaults to
+		      todo.txt.
 
 		    prepend NR "TEXT TO PREPEND"
 		    prep NR "TEXT TO PREPEND"
